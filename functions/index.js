@@ -32,6 +32,7 @@ const mailTransport = nodemailer.createTransport({
 
 // Sends an email confirmation when a user changes his mailing list subscription.
 exports.sendEmailConfirmation = functions.database.ref('/users/{uid}').onWrite((event) => {
+  let body = '';
   const snapshot = event.data;
   const val = snapshot.val();
   const mailOptions = {
@@ -41,7 +42,9 @@ exports.sendEmailConfirmation = functions.database.ref('/users/{uid}').onWrite((
 
   // Building Email message.
   mailOptions.subject = 'Predix UI CLA form submission';
-  mailOptions.text = `Name: ${val._contributor}\nEmail: ${val._email}\nGitHub: ${val._github}`;
+  let recordKeys = Object.keys(val)
+  recordKeys.forEach( aKey => body = body.concat(`${aKey} : ${val[aKey]}\n`))
+  mailOptions.text = body;
 
   return mailTransport.sendMail(mailOptions)
     .then(() => console.log(`New CLA sign up:`))
